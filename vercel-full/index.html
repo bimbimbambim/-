@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍱 Food Order Manager - Полная система</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #0a0a0a; color: #ffffff; }
+        .gradient { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .card { background: #1a1a1a; border: 1px solid #333; }
+        .modal { background: rgba(0,0,0,0.8); }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <div class="gradient p-6 text-center">
+            <div class="text-4xl mb-2">🍱</div>
+            <h1 class="text-2xl font-bold">Food Order Manager</h1>
+            <p class="text-green-100 mt-2">Полная система управления с сохранением данных</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="max-w-7xl mx-auto p-4">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                <button onclick="showPage('orders')" class="card p-4 rounded-lg text-center hover:bg-green-900 transition-all">
+                    <div class="text-2xl mb-2">📋</div>
+                    <div class="font-semibold">Заказы</div>
+                    <div class="text-xs text-gray-400" id="orders-count">0</div>
+                </button>
+                <button onclick="showPage('customers')" class="card p-4 rounded-lg text-center hover:bg-green-900 transition-all">
+                    <div class="text-2xl mb-2">👥</div>
+                    <div class="font-semibold">Клиенты</div>
+                    <div class="text-xs text-gray-400" id="customers-count">0</div>
+                </button>
+                <button onclick="showPage('products')" class="card p-4 rounded-lg text-center hover:bg-green-900 transition-all">
+                    <div class="text-2xl mb-2">🍽️</div>
+                    <div class="font-semibold">Продукты</div>
+                    <div class="text-xs text-gray-400" id="products-count">0</div>
+                </button>
+                <button onclick="showPage('menu')" class="card p-4 rounded-lg text-center hover:bg-green-900 transition-all">
+                    <div class="text-2xl mb-2">🍱</div>
+                    <div class="font-semibold">Меню</div>
+                </button>
+                <button onclick="showPage('analytics')" class="card p-4 rounded-lg text-center hover:bg-green-900 transition-all">
+                    <div class="text-2xl mb-2">📊</div>
+                    <div class="font-semibold">Аналитика</div>
+                </button>
+            </div>
+
+            <!-- Orders Page -->
+            <div id="orders-page" class="page">
+                <div class="card rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">📋 Управление заказами</h2>
+                        <button onclick="openOrderModal()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            ➕ Новый заказ
+                        </button>
+                    </div>
+                    <div class="mb-4">
+                        <input type="text" placeholder="🔍 Поиск заказов..." class="w-full p-2 rounded bg-gray-800 text-white" oninput="searchOrders(this.value)">
+                    </div>
+                    <div id="orders-list" class="space-y-2">
+                        <!-- Orders will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Page -->
+            <div id="customers-page" class="page hidden">
+                <div class="card rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">👥 База клиентов</h2>
+                        <button onclick="openCustomerModal()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            ➕ Добавить клиента
+                        </button>
+                    </div>
+                    <div class="mb-4">
+                        <input type="text" placeholder="🔍 Поиск клиентов..." class="w-full p-2 rounded bg-gray-800 text-white" oninput="searchCustomers(this.value)">
+                    </div>
+                    <div id="customers-list" class="space-y-2">
+                        <!-- Customers will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Page -->
+            <div id="products-page" class="page hidden">
+                <div class="card rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">🍽️ Управление продуктами</h2>
+                        <button onclick="openProductModal()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            ➕ Добавить продукт
+                        </button>
+                    </div>
+                    <div class="mb-4">
+                        <input type="text" placeholder="🔍 Поиск продуктов..." class="w-full p-2 rounded bg-gray-800 text-white" oninput="searchProducts(this.value)">
+                    </div>
+                    <div id="products-list" class="space-y-2">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Page -->
+            <div id="menu-page" class="page hidden">
+                <div class="card rounded-lg p-6">
+                    <h2 class="text-xl font-bold mb-4">🍱 Меню для клиентов</h2>
+                    <div class="mb-4">
+                        <input type="text" placeholder="🔍 Поиск блюд..." class="w-full p-2 rounded bg-gray-800 text-white" oninput="searchMenu(this.value)">
+                    </div>
+                    <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Menu items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div id="analytics-page" class="page hidden">
+                <div class="card rounded-lg p-6">
+                    <h2 class="text-xl font-bold mb-4">📊 Аналитика</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gray-800 p-4 rounded">
+                            <div class="text-2xl font-bold text-green-400" id="total-orders">0</div>
+                            <div class="text-sm text-gray-400">Всего заказов</div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded">
+                            <div class="text-2xl font-bold text-blue-400" id="total-revenue">0 ₽</div>
+                            <div class="text-sm text-gray-400">Общая выручка</div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded">
+                            <div class="text-2xl font-bold text-purple-400" id="avg-order">0 ₽</div>
+                            <div class="text-sm text-gray-400">Средний чек</div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <h3 class="font-bold mb-2">Популярные блюда</h3>
+                        <div id="popular-products">
+                            <!-- Popular products will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Modal -->
+    <div id="order-modal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="card rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-bold mb-4">➕ Новый заказ</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm mb-1">Клиент:</label>
+                    <select id="order-customer" class="w-full p-2 rounded bg-gray-800 text-white">
+                        <option value="">Выберите клиента</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Продукты:</label>
+                    <div id="order-items" class="space-y-2">
+                        <!-- Order items will be added here -->
+                    </div>
+                    <button onclick="addOrderItem()" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">➕ Добавить продукт</button>
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Статус:</label>
+                    <select id="order-status" class="w-full p-2 rounded bg-gray-800 text-white">
+                        <option value="pending">В ожидании</option>
+                        <option value="preparing">Готовится</option>
+                        <option value="ready">Готов</option>
+                        <option value="completed">Выполнен</option>
+                        <option value="cancelled">Отменен</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button onclick="saveOrder()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Сохранить</button>
+                <button onclick="closeOrderModal()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Modal -->
+    <div id="customer-modal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="card rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-bold mb-4">➕ Добавить клиента</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm mb-1">Имя:</label>
+                    <input type="text" id="customer-name" class="w-full p-2 rounded bg-gray-800 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Телефон:</label>
+                    <input type="tel" id="customer-phone" class="w-full p-2 rounded bg-gray-800 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Адрес:</label>
+                    <input type="text" id="customer-address" class="w-full p-2 rounded bg-gray-800 text-white">
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button onclick="saveCustomer()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Сохранить</button>
+                <button onclick="closeCustomerModal()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="card rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-bold mb-4">➕ Добавить продукт</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm mb-1">Название:</label>
+                    <input type="text" id="product-name" class="w-full p-2 rounded bg-gray-800 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Эмодзи:</label>
+                    <input type="text" id="product-emoji" class="w-full p-2 rounded bg-gray-800 text-white" maxlength="2">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Цена продажи:</label>
+                    <input type="number" id="product-price" class="w-full p-2 rounded bg-gray-800 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Цена закупки:</label>
+                    <input type="number" id="product-cost" class="w-full p-2 rounded bg-gray-800 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Категория:</label>
+                    <select id="product-category" class="w-full p-2 rounded bg-gray-800 text-white">
+                        <option value="Горячие блюда">Горячие блюда</option>
+                        <option value="Закуски">Закуски</option>
+                        <option value="Напитки">Напитки</option>
+                        <option value="Салаты">Салаты</option>
+                        <option value="Десерты">Десерты</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button onclick="saveProduct()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Сохранить</button>
+                <button onclick="closeProductModal()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data management with localStorage
+        class DataManager {
+            constructor() {
+                this.loadData();
+            }
+
+            loadData() {
+                this.orders = JSON.parse(localStorage.getItem('orders') || '[]');
+                this.customers = JSON.parse(localStorage.getItem('customers') || '[]');
+                this.products = JSON.parse(localStorage.getItem('products') || '[]');
+                
+                // Initialize with sample data if empty
+                if (this.products.length === 0) {
+                    this.initSampleData();
+                }
+            }
+
+            saveData() {
+                localStorage.setItem('orders', JSON.stringify(this.orders));
+                localStorage.setItem('customers', JSON.stringify(this.customers));
+                localStorage.setItem('products', JSON.stringify(this.products));
+            }
+
+            initSampleData() {
+                this.products = [
+                    { id: 1, name: 'Бургер классический', emoji: '🍔', price: 299, cost: 180, category: 'Горячие блюда' },
+                    { id: 2, name: 'Картошка фри', emoji: '🍟', price: 149, cost: 90, category: 'Закуски' },
+                    { id: 3, name: 'Кола', emoji: '🥤', price: 99, cost: 60, category: 'Напитки' },
+                    { id: 4, name: 'Салат Цезарь', emoji: '🥗', price: 249, cost: 150, category: 'Салаты' },
+                    { id: 5, name: 'Пицца Маргарита', emoji: '🍕', price: 499, cost: 300, category: 'Горячие блюда' }
+                ];
+                
+                this.customers = [
+                    { id: 1, name: 'Иван Петров', phone: '+7 (900) 123-45-67', address: 'ул. Ленина, д. 1' },
+                    { id: 2, name: 'Мария Иванова', phone: '+7 (900) 234-56-78', address: 'ул. Советская, д. 2' }
+                ];
+                
+                this.saveData();
+            }
+
+            addOrder(order) {
+                order.id = Date.now();
+                order.createdAt = new Date().toISOString();
+                this.orders.push(order);
+                this.saveData();
+            }
+
+            addCustomer(customer) {
+                customer.id = Date.now();
+                customer.createdAt = new Date().toISOString();
+                this.customers.push(customer);
+                this.saveData();
+            }
+
+            addProduct(product) {
+                product.id = Date.now();
+                product.createdAt = new Date().toISOString();
+                this.products.push(product);
+                this.saveData();
+            }
+
+            updateOrder(id, updates) {
+                const index = this.orders.findIndex(o => o.id === id);
+                if (index !== -1) {
+                    this.orders[index] = { ...this.orders[index], ...updates };
+                    this.saveData();
+                }
+            }
+
+            deleteOrder(id) {
+                this.orders = this.orders.filter(o => o.id !== id);
+                this.saveData();
+            }
+        }
+
+        const dataManager = new DataManager();
+        let currentPage = 'orders';
+        let currentOrderItems = [];
+
+        // Page navigation
+        function showPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`${page}-page`).classList.remove('hidden');
+            
+            // Load data for the page
+            if (page === 'orders') loadOrders();
+            if (page === 'customers') loadCustomers();
+            if (page === 'products') loadProducts();
+            if (page === 'menu') loadMenu();
+            if (page === 'analytics') loadAnalytics();
+        }
+
+        // Load functions
+        function loadOrders() {
+            const ordersList = document.getElementById('orders-list');
+            const orders = dataManager.orders;
+            
+            document.getElementById('orders-count').textContent = orders.length;
+            
+            ordersList.innerHTML = orders.map(order => `
+                <div class="bg-gray-800 p-3 rounded">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-semibold">${order.customerName || 'Не указан'}</div>
+                            <div class="text-sm text-gray-400">${order.items?.map(item => `${item.name} x${item.quantity}`).join(', ') || 'Нет товаров'}</div>
+                            <div class="text-xs text-gray-500">${new Date(order.createdAt).toLocaleString()}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-green-400">${order.total || 0} ₽</div>
+                            <div class="text-xs ${getStatusColor(order.status)}">
+                                ${getStatusText(order.status)}
+                            </div>
+                            <button onclick="deleteOrder(${order.id})" class="text-red-400 text-xs hover:text-red-300">Удалить</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadCustomers() {
+            const customersList = document.getElementById('customers-list');
+            const customers = dataManager.customers;
+            
+            document.getElementById('customers-count').textContent = customers.length;
+            
+            customersList.innerHTML = customers.map(customer => `
+                <div class="bg-gray-800 p-3 rounded">
+                    <div class="font-semibold">${customer.name}</div>
+                    <div class="text-sm text-gray-400">${customer.phone}</div>
+                    <div class="text-sm text-gray-400">${customer.address}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadProducts() {
+            const productsList = document.getElementById('products-list');
+            const products = dataManager.products;
+            
+            document.getElementById('products-count').textContent = products.length;
+            
+            productsList.innerHTML = products.map(product => `
+                <div class="bg-gray-800 p-3 rounded">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-semibold">${product.emoji} ${product.name}</div>
+                            <div class="text-sm text-gray-400">${product.category}</div>
+                            <div class="text-sm text-gray-500">Закупка: ${product.cost} ₽</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-green-400">${product.price} ₽</div>
+                            <div class="text-xs text-blue-400">+${product.price - product.cost} ₽</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadMenu() {
+            const menuGrid = document.getElementById('menu-grid');
+            const products = dataManager.products;
+            
+            menuGrid.innerHTML = products.map(product => `
+                <div class="bg-gray-800 p-4 rounded-lg text-center hover:bg-gray-700 transition-all cursor-pointer" onclick="copyPrice('${product.name}', ${product.price})">
+                    <div class="text-4xl mb-2">${product.emoji}</div>
+                    <div class="font-semibold mb-1">${product.name}</div>
+                    <div class="text-sm text-gray-400 mb-2">${product.category}</div>
+                    <div class="font-bold text-green-400">${product.price} ₽</div>
+                </div>
+            `).join('');
+        }
+
+        function loadAnalytics() {
+            const orders = dataManager.orders;
+            const products = dataManager.products;
+            
+            const totalOrders = orders.length;
+            const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+            const avgOrder = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+            
+            document.getElementById('total-orders').textContent = totalOrders;
+            document.getElementById('total-revenue').textContent = `${totalRevenue} ₽`;
+            document.getElementById('avg-order').textContent = `${Math.round(avgOrder)} ₽`;
+            
+            // Popular products
+            const productCounts = {};
+            orders.forEach(order => {
+                if (order.items) {
+                    order.items.forEach(item => {
+                        productCounts[item.name] = (productCounts[item.name] || 0) + item.quantity;
+                    });
+                }
+            });
+            
+            const popularProducts = Object.entries(productCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            document.getElementById('popular-products').innerHTML = popularProducts.map(([name, count]) => `
+                <div class="flex justify-between items-center bg-gray-700 p-2 rounded mb-1">
+                    <span>${name}</span>
+                    <span class="text-green-400">${count} раз</span>
+                </div>
+            `).join('');
+        }
+
+        // Modal functions
+        function openOrderModal() {
+            document.getElementById('order-modal').classList.remove('hidden');
+            loadCustomerSelect();
+            currentOrderItems = [];
+            updateOrderItems();
+        }
+
+        function closeOrderModal() {
+            document.getElementById('order-modal').classList.add('hidden');
+        }
+
+        function openCustomerModal() {
+            document.getElementById('customer-modal').classList.remove('hidden');
+        }
+
+        function closeCustomerModal() {
+            document.getElementById('customer-modal').classList.add('hidden');
+        }
+
+        function openProductModal() {
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        // Save functions
+        function saveOrder() {
+            const customerSelect = document.getElementById('order-customer');
+            const statusSelect = document.getElementById('order-status');
+            
+            if (!customerSelect.value || currentOrderItems.length === 0) {
+                alert('Выберите клиента и добавьте продукты');
+                return;
+            }
+            
+            const customer = dataManager.customers.find(c => c.id == customerSelect.value);
+            const order = {
+                customerName: customer.name,
+                customerId: customer.id,
+                items: currentOrderItems,
+                total: currentOrderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                status: statusSelect.value
+            };
+            
+            dataManager.addOrder(order);
+            closeOrderModal();
+            loadOrders();
+            loadAnalytics();
+            
+            // Show success message
+            showToast('Заказ успешно создан!');
+        }
+
+        function saveCustomer() {
+            const name = document.getElementById('customer-name').value;
+            const phone = document.getElementById('customer-phone').value;
+            const address = document.getElementById('customer-address').value;
+            
+            if (!name || !phone) {
+                alert('Заполните имя и телефон');
+                return;
+            }
+            
+            const customer = { name, phone, address };
+            dataManager.addCustomer(customer);
+            closeCustomerModal();
+            loadCustomers();
+            
+            showToast('Клиент успешно добавлен!');
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('product-name').value;
+            const emoji = document.getElementById('product-emoji').value || '🍽️';
+            const price = parseFloat(document.getElementById('product-price').value);
+            const cost = parseFloat(document.getElementById('product-cost').value);
+            const category = document.getElementById('product-category').value;
+            
+            if (!name || !price || !cost) {
+                alert('Заполните название, цену продажи и закупки');
+                return;
+            }
+            
+            const product = { name, emoji, price, cost, category };
+            dataManager.addProduct(product);
+            closeProductModal();
+            loadProducts();
+            loadMenu();
+            
+            showToast('Продукт успешно добавлен!');
+        }
+
+        // Order items management
+        function loadCustomerSelect() {
+            const select = document.getElementById('order-customer');
+            select.innerHTML = '<option value="">Выберите клиента</option>' +
+                dataManager.customers.map(customer => 
+                    `<option value="${customer.id}">${customer.name}</option>`
+                ).join('');
+        }
+
+        function addOrderItem() {
+            const productSelect = document.createElement('select');
+            productSelect.className = 'bg-gray-800 text-white p-1 rounded mr-2';
+            productSelect.innerHTML = dataManager.products.map(product => 
+                `<option value="${product.id}">${product.emoji} ${product.name} - ${product.price} ₽</option>`
+            ).join('');
+            
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.min = '1';
+            quantityInput.value = '1';
+            quantityInput.className = 'bg-gray-800 text-white p-1 rounded mr-2 w-20';
+            
+            const removeButton = document.createElement('button');
+            removeButton.textContent = '❌';
+            removeButton.className = 'bg-red-600 text-white px-2 py-1 rounded text-sm';
+            removeButton.onclick = () => itemDiv.remove();
+            
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'flex items-center gap-2';
+            itemDiv.appendChild(productSelect);
+            itemDiv.appendChild(quantityInput);
+            itemDiv.appendChild(removeButton);
+            
+            document.getElementById('order-items').appendChild(itemDiv);
+        }
+
+        function updateOrderItems() {
+            currentOrderItems = [];
+            const itemElements = document.getElementById('order-items').children;
+            
+            Array.from(itemElements).forEach(element => {
+                const productSelect = element.querySelector('select');
+                const quantityInput = element.querySelector('input');
+                
+                if (productSelect && quantityInput) {
+                    const product = dataManager.products.find(p => p.id == productSelect.value);
+                    if (product) {
+                        currentOrderItems.push({
+                            id: product.id,
+                            name: product.name,
+                            price: product.price,
+                            quantity: parseInt(quantityInput.value)
+                        });
+                    }
+                }
+            });
+        }
+
+        function deleteOrder(id) {
+            if (confirm('Удалить этот заказ?')) {
+                dataManager.deleteOrder(id);
+                loadOrders();
+                loadAnalytics();
+                showToast('Заказ удален');
+            }
+        }
+
+        // Utility functions
+        function getStatusColor(status) {
+            const colors = {
+                pending: 'text-yellow-400',
+                preparing: 'text-blue-400',
+                ready: 'text-green-400',
+                completed: 'text-green-600',
+                cancelled: 'text-red-400'
+            };
+            return colors[status] || 'text-gray-400';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                pending: 'В ожидании',
+                preparing: 'Готовится',
+                ready: 'Готов',
+                completed: 'Выполнен',
+                cancelled: 'Отменен'
+            };
+            return texts[status] || status;
+        }
+
+        function copyPrice(name, price) {
+            const text = `${name}: ${price} ₽`;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Цена "${name}" скопирована!`);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Search functions
+        function searchOrders(term) {
+            // Implementation for search
+            loadOrders();
+        }
+
+        function searchCustomers(term) {
+            // Implementation for search
+            loadCustomers();
+        }
+
+        function searchProducts(term) {
+            // Implementation for search
+            loadProducts();
+        }
+
+        function searchMenu(term) {
+            // Implementation for search
+            loadMenu();
+        }
+
+        // Initialize
+        showPage('orders');
+    </script>
+</body>
+</html>
