@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+body {
+  @apply bg-apple-gray-50 text-apple-gray-700 antialiased;
+}
+
+.dark body {
+  @apply bg-apple-gray-900 text-apple-gray-100;
+}
+
+.glass {
+  @apply backdrop-blur-md bg-white/70 border border-white/20;
+}
+
+.dark .glass {
+  @apply bg-apple-gray-800/70 border-white/10;
+}
+
+.apple-button {
+  @apply px-4 py-2 rounded-full font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+}
+
+.apple-button-primary {
+  @apply apple-button bg-apple-blue text-white hover:bg-apple-blue/90 shadow-sm;
+}
+
+.apple-button-secondary {
+  @apply apple-button bg-apple-gray-200 text-apple-gray-700 hover:bg-apple-gray-300 dark:bg-apple-gray-700 dark:text-apple-gray-100 dark:hover:bg-apple-gray-600;
+}
